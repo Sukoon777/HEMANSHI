@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Birthday Celebration - Photo Album</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 15px 30px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .header-title {
+      color: white;
+      font-size: 1.2em;
+      font-weight: 600;
+    }
+
+    .photo-counter {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9em;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 15px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .album-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      perspective: 1500px;
+    }
+
+    .photo-carousel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 400px;
+      transform-style: preserve-3d;
+      transition: transform 1s ease;
+    }
+
+    .photo-slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 25px;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .photo-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 25px;
+    }
+
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #ffecd2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1.2em;
+      border-radius: 25px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .photo-slide.active {
+      transform: translateZ(250px) scale(1.15);
+      z-index: 10;
+      box-shadow: 0 0 50px rgba(255,255,255,0.4),
+                  0 0 100px rgba(255,182,193,0.3),
+                  0 30px 60px rgba(0,0,0,0.4);
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 100;
+    }
+
+    .control-btn {
+      background: rgba(255,255,255,0.95);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2em;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .music-indicator,
+    .autoplay-indicator {
+      position: fixed;
+      top: 80px;
+      padding: 10px 15px;
+      font-size: 0.8em;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .music-indicator {
+      right: 20px;
+    }
+
+    .autoplay-indicator {
+      left: 20px;
+    }
+
+    .autoplay-indicator.playing::before {
+      content: "▶️ ";
+    }
+
+    .autoplay-indicator.paused::before {
+      content: "⏸️ ";
+    }
+
+    .info-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(20px);
+      text-align: center;
+      padding: 20px 30px 90px;
+      color: white;
+    }
+
+    .birthday-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2em;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .birthday-subtitle {
+      font-size: 1em;
+    }
+
+    @media (max-width: 480px) {
+      .photo-carousel {
+        width: 240px;
+        height: 320px;
+      }
+
+      .control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1em;
+      }
+
+      .header-title {
+        font-size: 1em;
+      }
+
+      .photo-counter, .music-indicator, .autoplay-indicator {
+        font-size: 0.7em;
+        padding: 6px 10px;
+      }
+
+      .birthday-title {
+        font-size: 1.4em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-title">🎂 Birthday Celebration</div>
+    <div class="photo-counter">
+      <span id="currentPhoto">1</span> / <span id="totalPhotos">60</span>
+    </div>
+  </div>
+
+  <!-- STATUS INDICATORS -->
+  <div class="autoplay-indicator playing" id="autoplayStatus">Auto Play</div>
+  <div class="music-indicator">🎵 Birthday Music</div>
+
+  <!-- CAROUSEL CONTAINER -->
+  <div class="album-container">
+    <div class="photo-carousel" id="photoCarousel"></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="control-btn" onclick="previousPhoto()">⏮️</button>
+    <button class="control-btn" onclick="toggleAutoplay()" id="playBtn">⏸️</button>
+    <button class="control-btn" onclick="nextPhoto()">⏭️</button>
+    <button class="control-btn" onclick="toggleMusic()" id="musicBtn">🔊</button>
+  </div>
+
+  <!-- INFO PANEL -->
+  <div class="info-panel">
+    <div class="birthday-title">HAPPY BIRTHDAY HEMANSHI</div>
+    <div class="birthday-subtitle">🎉 Special Day - Memory Album</div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    const TOTAL_PHOTOS = 60;
+    const VISIBLE_PHOTOS = 7;
+    const AUTO_ADVANCE_TIME = 4000;
+
+    const musicFiles = [
+      'Music/birthday1.mp3',
+      'Music/birthday2.mp3',
+      'Music/happy.mp3',
+      'Music/celebration.mp3'
+    ];
+
+    let currentPhotoIndex = 0;
+    let isAutoplay = true;
+    let isMusicPlaying = true;
+    let autoplayInterval;
+    let currentAudio = null;
+    let currentMusicIndex = 0;
+
+    function initAlbum() {
+      const carousel = document.getElementById('photoCarousel');
+
+      for (let i = 0; i < TOTAL_PHOTOS; i++) {
+        const slide = document.createElement('div');
+        slide.className = 'photo-slide';
+        slide.dataset.index = i;
+
+        const photoSrc = `Image/Photo (${i + 1}).jpg`;
+        const img = document.createElement('img');
+        img.src = photoSrc;
+        img.alt = `Photo ${i + 1}`;
+        img.loading = 'lazy';
+
+        img.onerror = () => {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'photo-placeholder';
+          placeholder.innerText = `Photo ${i + 1}`;
+          slide.innerHTML = '';
+          slide.appendChild(placeholder);
+        };
+
+        slide.appendChild(img);
+        slide.addEventListener('click', () => {
+          currentPhotoIndex = i;
+          updateCarousel();
+          updateCounter();
+        });
+
+        carousel.appendChild(slide);
+      }
+
+      document.getElementById('totalPhotos').textContent = TOTAL_PHOTOS;
+      updateCarousel();
+      updateCounter();
+      startAutoplay();
+      playMusic();
+    }
+
+    function updateCarousel() {
+      const slides = document.querySelectorAll('.photo-slide');
+      const angleStep = 360 / VISIBLE_PHOTOS;
+      const radius = 400;
+
+      slides.forEach((slide, index) => {
+        const rel = index - currentPhotoIndex;
+
+        if (Math.abs(rel) <= Math.floor(VISIBLE_PHOTOS / 2)) {
+          const angle = rel * angleStep;
+          slide.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+          slide.style.opacity = '1';
+          slide.classList.toggle('active', index === currentPhotoIndex);
+        } else {
+          slide.style.opacity = '0';
+          slide.classList.remove('active');
+        }
+      });
+
+      const carousel = document.getElementById('photoCarousel');
+      carousel.style.transform = `translate(-50%, -50%) rotateY(${-currentPhotoIndex * (360 / TOTAL_PHOTOS)}deg)`;
+    }
+
+    function updateCounter() {
+      document.getElementById('currentPhoto').textContent = currentPhotoIndex + 1;
+    }
+
+    function nextPhoto() {
+      currentPhotoIndex = (currentPhotoIndex + 1) % TOTAL_PHOTOS;
+      updateCarousel();
+      updateCounter();
+    }
+
+    function previousPhoto() {
+      currentPhotoIndex = (currentPhotoIndex - 1 + TOTAL_PHOTOS) % TOTAL_PHOTOS;
+      updateCarousel();
+      updateCounter();
+    }
+
+    function toggleAutoplay() {
+      isAutoplay = !isAutoplay;
+      const btn = document.getElementById('playBtn');
+      const status = document.getElementById('autoplayStatus');
+      if (isAutoplay) {
+        startAutoplay();
+        btn.textContent = '⏸️';
+        status.className = 'autoplay-indicator playing';
+      } else {
+        stopAutoplay();
+        btn.textContent = '▶️';
+        status.className = 'autoplay-indicator paused';
+      }
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplayInterval = setInterval(nextPhoto, AUTO_ADVANCE_TIME);
+    }
+
+    function stopAutoplay() {
+      clearInterval(autoplayInterval);
+    }
+
+    function playMusic() {
+      if (currentAudio) currentAudio.pause();
+      const musicFile = musicFiles[currentMusicIndex];
+      currentAudio = new Audio(musicFile);
+      currentAudio.loop = false;
+      currentAudio.muted = true;
+
+      currentAudio.addEventListener('ended', nextSong);
+
+      currentAudio.play().then(() => {
+        setTimeout(() => {
+          currentAudio.muted = false;
+          console.log('[✔] Music autoplay started');
+        }, 500);
+      }).catch(e => {
+        console.warn('[⚠️] Autoplay blocked', e);
+      });
+    }
+
+    function nextSong() {
+      currentMusicIndex = (currentMusicIndex + 1) % musicFiles.length;
+      playMusic();
+    }
+
+    function toggleMusic() {
+      isMusicPlaying = !isMusicPlaying;
+      const btn = document.getElementById('musicBtn');
+
+      if (isMusicPlaying && currentAudio) {
+        currentAudio.play().catch(() => {});
+        btn.textContent = '🔊';
+      } else if (currentAudio) {
+        currentAudio.pause();
+        btn.textContent = '🔇';
+      }
+    }
+
+    // Fallback audio unlock on click
+    document.addEventListener('click', () => {
+      if (isMusicPlaying && currentAudio && currentAudio.paused) {
+        currentAudio.play().then(() => {
+          currentAudio.muted = false;
+        }).catch(() => {});
+      }
+    }, { once: true });
+
+    // Resume on visibility
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === "visible" && isMusicPlaying && currentAudio && currentAudio.paused) {
+        currentAudio.play().catch(() => {});
+      }
+    });
+
+    window.addEventListener('load', initAlbum);
+  </script>
+
+</body>
+</html>
