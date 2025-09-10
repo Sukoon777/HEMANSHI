@@ -2,24 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Viewport Fix for Mobile Devices -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Birthday Celebration - Photo Album</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <title>Birthday Album - Hemanshi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       width: 100%;
       height: 100dvh;
-      overflow: hidden;
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
     }
 
     .header {
@@ -47,17 +41,6 @@
       background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
       padding: 6px 12px;
-      backdrop-filter: blur(6px);
-    }
-
-    .album-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 100%;
-      height: 100%;
-      perspective: 1500px;
     }
 
     .photo-carousel {
@@ -65,29 +48,37 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 70vw;
-      height: 60vh;
+      width: 90vw;
+      height: 65vh;
       max-width: 400px;
       max-height: 600px;
-      transform-style: preserve-3d;
-      transition: transform 1s ease;
+      perspective: 1000px;
     }
 
     .photo-slide {
       position: absolute;
       width: 100%;
       height: 100%;
+      background: white;
       border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
       overflow: hidden;
-      transform-style: preserve-3d;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      transform: rotateY(90deg);
+      opacity: 0;
+      transition: all 0.8s ease;
+      backface-visibility: hidden;
+    }
+
+    .photo-slide.active {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1.03);
+      z-index: 2;
     }
 
     .photo-slide img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 20px;
     }
 
     .photo-placeholder {
@@ -96,17 +87,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #fecfef 0%, #ff9a9e 100%);
+      background: linear-gradient(to right, #ff9a9e, #fecfef);
       color: white;
       font-weight: bold;
       font-size: 1.2em;
       border-radius: 20px;
-    }
-
-    .photo-slide.active {
-      transform: translateZ(250px) scale(1.1);
-      z-index: 10;
-      box-shadow: 0 0 20px #fff, 0 0 40px #ffb6c1, 0 20px 40px rgba(0,0,0,0.4);
     }
 
     .controls {
@@ -115,9 +100,8 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 10px;
+      gap: 12px;
       z-index: 10;
-      padding-bottom: env(safe-area-inset-bottom, 10px);
     }
 
     .control-btn {
@@ -126,31 +110,13 @@
       background: white;
       border: none;
       border-radius: 50%;
-      font-size: 1.1em;
+      font-size: 1.2em;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
     }
-
-    .music-indicator,
-    .autoplay-indicator {
-      position: fixed;
-      top: 70px;
-      padding: 8px 14px;
-      color: white;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 20px;
-      font-size: 0.75em;
-      backdrop-filter: blur(8px);
-      z-index: 10;
-    }
-
-    .music-indicator { right: 20px; }
-    .autoplay-indicator { left: 20px; }
-    .autoplay-indicator.playing::before { content: "▶️ "; }
-    .autoplay-indicator.paused::before { content: "⏸️ "; }
 
     .info-panel {
       position: fixed;
@@ -160,7 +126,7 @@
       backdrop-filter: blur(10px);
       color: white;
       text-align: center;
-      padding: 20px 10px 80px;
+      padding: 20px 10px 70px;
     }
 
     .birthday-title {
@@ -172,43 +138,44 @@
     }
 
     .birthday-subtitle {
-      margin-top: 4px;
       font-size: 1em;
     }
 
-    @media screen and (max-aspect-ratio: 9/16) {
-      .photo-carousel {
-        width: 75vw;
-        height: 54vh;
-      }
-
-      .control-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1em;
-      }
-
-      .birthday-title { font-size: 1.6em; }
-      .photo-counter, .music-indicator, .autoplay-indicator {
-        font-size: 0.65em;
-        padding: 6px 8px;
-      }
+    .autoplay-indicator,
+    .music-indicator {
+      position: fixed;
+      top: 70px;
+      font-size: 0.75em;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
     }
+
+    .autoplay-indicator { left: 20px; }
+    .music-indicator { right: 20px; }
+
+    .autoplay-indicator.playing::before { content: "▶️ "; }
+    .autoplay-indicator.paused::before { content: "⏸️ "; }
   </style>
 </head>
 <body>
+
+  <!-- Header -->
   <div class="header">
     <div class="header-title">🎂 Birthday Celebration</div>
     <div class="photo-counter"><span id="currentPhoto">1</span> / <span id="totalPhotos">60</span></div>
   </div>
 
+  <!-- Indicators -->
   <div class="autoplay-indicator playing" id="autoplayStatus">Auto Play</div>
   <div class="music-indicator">🎵 Birthday Music</div>
 
-  <div class="album-container">
-    <div class="photo-carousel" id="photoCarousel"></div>
-  </div>
+  <!-- Carousel -->
+  <div class="photo-carousel" id="photoCarousel"></div>
 
+  <!-- Controls -->
   <div class="controls">
     <button class="control-btn" onclick="previousPhoto()">⏮️</button>
     <button class="control-btn" onclick="toggleAutoplay()" id="playBtn">⏸️</button>
@@ -216,16 +183,16 @@
     <button class="control-btn" onclick="toggleMusic()" id="musicBtn">🔊</button>
   </div>
 
+  <!-- Info Panel -->
   <div class="info-panel">
     <div class="birthday-title">HAPPY BIRTHDAY HEMANSHI</div>
     <div class="birthday-subtitle">🎉 Special Day - Memory Album</div>
   </div>
 
+  <!-- JavaScript -->
   <script>
     const TOTAL_PHOTOS = 60;
-    const VISIBLE_PHOTOS = 10;
     const AUTO_ADVANCE_TIME = 4000;
-
     const musicFiles = [
       'Music/birthday1.mp3',
       'Music/birthday2.mp3',
@@ -235,7 +202,7 @@
 
     let currentPhotoIndex = 0;
     let isAutoplay = true;
-    let isMusicPlaying = false; // manual start
+    let isMusicPlaying = false;
     let autoplayInterval;
     let currentAudio = null;
     let currentMusicIndex = 0;
@@ -262,41 +229,20 @@
         };
 
         slide.appendChild(img);
-        slide.addEventListener('click', () => {
-          currentPhotoIndex = i;
-          updateCarousel();
-          updateCounter();
-        });
-
         carousel.appendChild(slide);
       }
 
       document.getElementById('totalPhotos').textContent = TOTAL_PHOTOS;
-      updateCarousel();
+      updateSlides();
       updateCounter();
       startAutoplay();
     }
 
-    function updateCarousel() {
+    function updateSlides() {
       const slides = document.querySelectorAll('.photo-slide');
-      const angleStep = 360 / VISIBLE_PHOTOS;
-      const radius = 400;
-
       slides.forEach((slide, index) => {
-        const rel = index - currentPhotoIndex;
-        if (Math.abs(rel) <= Math.floor(VISIBLE_PHOTOS / 2)) {
-          const angle = rel * angleStep;
-          slide.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
-          slide.style.opacity = '1';
-          slide.classList.toggle('active', index === currentPhotoIndex);
-        } else {
-          slide.style.opacity = '0';
-          slide.classList.remove('active');
-        }
+        slide.classList.toggle('active', index === currentPhotoIndex);
       });
-
-      document.getElementById('photoCarousel').style.transform =
-        `translate(-50%, -50%) rotateY(${-currentPhotoIndex * (360 / TOTAL_PHOTOS)}deg)`;
     }
 
     function updateCounter() {
@@ -305,13 +251,13 @@
 
     function nextPhoto() {
       currentPhotoIndex = (currentPhotoIndex + 1) % TOTAL_PHOTOS;
-      updateCarousel();
+      updateSlides();
       updateCounter();
     }
 
     function previousPhoto() {
       currentPhotoIndex = (currentPhotoIndex - 1 + TOTAL_PHOTOS) % TOTAL_PHOTOS;
-      updateCarousel();
+      updateSlides();
       updateCounter();
     }
 
@@ -344,11 +290,8 @@
       const musicFile = musicFiles[currentMusicIndex];
       currentAudio = new Audio(musicFile);
       currentAudio.loop = false;
-      currentAudio.muted = false;
+      currentAudio.play().catch(err => console.warn('Blocked:', err));
       currentAudio.addEventListener('ended', nextSong);
-      currentAudio.play().catch(err => {
-        console.warn('Music play blocked:', err);
-      });
     }
 
     function nextSong() {
@@ -368,15 +311,8 @@
       }
     }
 
-    // Handle screen resize / rotate
-    window.addEventListener('resize', updateCarousel);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(updateCarousel, 300);
-    });
-
     window.addEventListener('load', initAlbum);
   </script>
+
 </body>
 </html>
-
-
