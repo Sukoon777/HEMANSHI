@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- FIXED VIEWPORT -->
+  <!-- Viewport Fix for Mobile Devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Birthday Celebration - Photo Album</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
@@ -14,12 +14,12 @@
       box-sizing: border-box;
     }
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      background-attachment: fixed;
+    html, body {
+      width: 100%;
       height: 100dvh;
       overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .header {
@@ -50,7 +50,6 @@
       backdrop-filter: blur(6px);
     }
 
-    /* MAIN ALBUM CONTAINER */
     .album-container {
       position: absolute;
       top: 50%;
@@ -61,7 +60,6 @@
       perspective: 1500px;
     }
 
-    /* UPDATED: RESPONSIVE CAROUSEL */
     .photo-carousel {
       position: absolute;
       top: 50%;
@@ -151,7 +149,6 @@
 
     .music-indicator { right: 20px; }
     .autoplay-indicator { left: 20px; }
-
     .autoplay-indicator.playing::before { content: "▶️ "; }
     .autoplay-indicator.paused::before { content: "⏸️ "; }
 
@@ -179,7 +176,6 @@
       font-size: 1em;
     }
 
-    /* RESPONSIVE TUNING FOR MOBILE SCREENS */
     @media screen and (max-aspect-ratio: 9/16) {
       .photo-carousel {
         width: 75vw;
@@ -200,9 +196,7 @@
     }
   </style>
 </head>
-
 <body>
-
   <div class="header">
     <div class="header-title">🎂 Birthday Celebration</div>
     <div class="photo-counter"><span id="currentPhoto">1</span> / <span id="totalPhotos">60</span></div>
@@ -227,7 +221,6 @@
     <div class="birthday-subtitle">🎉 Special Day - Memory Album</div>
   </div>
 
-  <!-- JAVASCRIPT -->
   <script>
     const TOTAL_PHOTOS = 60;
     const VISIBLE_PHOTOS = 7;
@@ -242,7 +235,7 @@
 
     let currentPhotoIndex = 0;
     let isAutoplay = true;
-    let isMusicPlaying = false;  // OFF by default
+    let isMusicPlaying = false; // manual start
     let autoplayInterval;
     let currentAudio = null;
     let currentMusicIndex = 0;
@@ -255,9 +248,8 @@
         slide.className = 'photo-slide';
         slide.dataset.index = i;
 
-        const photoSrc = `Image/Photo (${i + 1}).jpg`;
         const img = document.createElement('img');
-        img.src = photoSrc;
+        img.src = `Image/Photo (${i + 1}).jpg`;
         img.alt = `Photo ${i + 1}`;
         img.loading = 'lazy';
 
@@ -303,7 +295,7 @@
         }
       });
 
-      document.getElementById('photoCarousel').style.transform = 
+      document.getElementById('photoCarousel').style.transform =
         `translate(-50%, -50%) rotateY(${-currentPhotoIndex * (360 / TOTAL_PHOTOS)}deg)`;
     }
 
@@ -353,10 +345,9 @@
       currentAudio = new Audio(musicFile);
       currentAudio.loop = false;
       currentAudio.muted = false;
-
       currentAudio.addEventListener('ended', nextSong);
       currentAudio.play().catch(err => {
-        console.warn("Autoplay blocked:", err);
+        console.warn('Music play blocked:', err);
       });
     }
 
@@ -376,6 +367,12 @@
         musicBtn.textContent = '🔇';
       }
     }
+
+    // Handle screen resize / rotate
+    window.addEventListener('resize', updateCarousel);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateCarousel, 300);
+    });
 
     window.addEventListener('load', initAlbum);
   </script>
